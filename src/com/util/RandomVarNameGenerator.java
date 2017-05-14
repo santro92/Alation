@@ -8,7 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-public class RandomVarNameGenerator {
+class RandomVarNameGenerator {
 
     public static final String FILENAME = "test.txt";
     private final static Set<String> KEYWORDS = new HashSet<>(Arrays.asList(
@@ -65,13 +65,13 @@ public class RandomVarNameGenerator {
                                                                     ));
 
     public static void main(String args[]) throws IOException {
-        int characterLength = 20;
-        int generateSize = 10000;
+        int characterLength = 200;
+        int generateSize = 1000000;
 
         Map<String, Integer> testInputs = new HashMap<>();
         while(testInputs.size() <  generateSize) {
             String name = RandomStringUtils.randomAlphanumeric(RandomUtils.nextInt(0, characterLength - 1) + 1);
-            if(!Character.isLowerCase(name.charAt(0)))
+            if(!Character.isJavaIdentifierStart(name.charAt(0)))
                 continue;
             if(!KEYWORDS.contains(name)) {
                 testInputs.put(name, RandomUtils.nextInt(1, 101));

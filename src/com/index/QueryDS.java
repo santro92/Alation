@@ -2,57 +2,68 @@ package com.index;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Type;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.*;
 
 public class QueryDS {
-
     private static QueryDS instance;
+    private Map<Integer, List<ConstructDS.Data>> dataMap;
 
-    private Map<Integer, List<Data>> dataMap;
-    Type dataMapType = new TypeToken<HashMap<Integer, List<Data>>>(){}.getType();
-
-
-    private QueryDS(String jsonString) {
+    private QueryDS() {
         Gson gson = new Gson();
-        dataMap = gson.fromJson(jsonString, dataMapType);
+        JsonReader jsonString = null;
+        try {
+            jsonString = new JsonReader(new FileReader("Output.json"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        if (jsonString != null) {
+            dataMap = gson.fromJson(jsonString, new TypeToken<HashMap<Integer, List<ConstructDS.Data>>>() {}.getType());
+        }
     }
 
-    public static QueryDS getInstance(String jsonString) {
-        if(instance == null){
-            instance = new QueryDS(jsonString);
+    public static QueryDS getInstance() {
+        if (instance == null) {
+            instance = new QueryDS();
         }
         return instance;
     }
 
-    public List<String> getTop10Strings(String query) {
-
-        PriorityQueue<Data> queue = new PriorityQueue<>();
-        int queryLen = query.length();
-
-        BoyerMoore bm = new BoyerMoore(query);
-
-        for(Integer key: dataMap.keySet()) {
-            if(key >= queryLen) {
-                for(Data d: dataMap.get(key)) {
-                    if(bm.search(d.getName()) != d.getName().length()) {
-                        queue.offer(d);
-                        if(queue.size() > 10) {
-                            queue.poll();
+    public Stack<String> getTop10Strings(String query) {
+        PriorityQueue<ConstructDS.Data> queue = new PriorityQueue<>();
+        if (!query.equals(StringUtils.EMPTY)) {
+            for (Integer key : dataMap.keySet()) {
+                if (key >= query.length()) {
+                    for (ConstructDS.Data d : dataMap.get(key)) {
+                        if (d.getName().startsWith(query)) {
+                            queue.offer(d);
+                            if (queue.size() > 10) {
+                                queue.poll();
+                            }
+                        } else {
+                            if (d.isUnderscorePresent()) {
+                                for (Integer pos : d.getUnderscore_pos()) {
+                                    if (d.getName().substring(pos + 1).startsWith(query)) {
+                                        queue.offer(d);
+                                        if (queue.size() > 10) {
+                                            queue.poll();
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-
-        List<String> result = new ArrayList<>();
-        while(queue.size()>0){
-            result.add(queue.poll().getName());
+        Stack<String> result = new Stack<>();
+        while (queue.size() > 0) {
+            result.push(queue.poll().getName());
         }
-        Collections.reverse(result);
-
         return result;
     }
-
 }
