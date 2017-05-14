@@ -10,7 +10,7 @@ import java.util.*;
 
 class RandomVarNameGenerator {
 
-    public static final String FILENAME = "test.txt";
+    private static final String FILENAME = "test.txt";
     private final static Set<String> KEYWORDS = new HashSet<>(Arrays.asList(
                                                                     "abstract",
                                                                     "continue",

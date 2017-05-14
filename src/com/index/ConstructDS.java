@@ -11,14 +11,17 @@ import java.util.*;
 public class ConstructDS {
 
     private static ConstructDS instance;
-    private static final String PREFIX = "_";
+    private static String PREFIX;
+    private static String OUTPUT_FILE_NAME;
 
-    private ConstructDS() {
+    private ConstructDS(Properties prop) {
+        PREFIX = prop.getProperty("PrefixSymbol");
+        OUTPUT_FILE_NAME = prop.getProperty("SerializedOutputFileName");
     }
 
-    public static ConstructDS getInstance() {
+    public static ConstructDS getInstance(Properties prop) {
         if (instance == null) {
-            instance = new ConstructDS();
+            instance = new ConstructDS(prop);
         }
         return instance;
     }
@@ -53,7 +56,7 @@ public class ConstructDS {
             }
         }
 
-        try (Writer writer = new FileWriter("Output.json")) {
+        try (Writer writer = new FileWriter(OUTPUT_FILE_NAME)) {
             Gson gson = new GsonBuilder().create();
             gson.toJson(dataMap, writer);
         } catch (IOException e) {
